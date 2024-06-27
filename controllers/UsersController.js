@@ -1,4 +1,4 @@
-i// controllers/UsersController.js
+// controllers/UsersController.js
 
 const crypto = require('crypto');
 const dbClient = require('../utils/db');
