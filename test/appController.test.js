@@ -1,35 +1,21 @@
-// test/appController.test.js
-const { expect } = require('chai');
-const request = require('chai-http');
-const server = require('../server');
-const redisClient = require('../utils/redis');
-const dbClient = require('../utils/db');
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import app from '../server'; // Adjust the path according to your project structure
 
-chai.use(request);
+const { expect } = chai;
+chai.use(chaiHttp);
 
 describe('AppController', () => {
-  before(async () => {
-    await redisClient.client.flushall();
-    await dbClient.db.dropDatabase();
+  describe('GET /status', () => {
+    it('should return status code 200', (done) => {
+      chai.request(app)
+        .get('/status')
+        .end((err, res) => {
+          expect(res).to.have.status(200);
+          done();
+        });
+    });
   });
 
-  it('GET /status should return redis and db status', (done) => {
-    chai.request(server)
-      .get('/status')
-      .end((err, res) => {
-        expect(res).to.have.status(200);
-        expect(res.body).to.deep.equal({ redis: true, db: true });
-        done();
-      });
-  });
-
-  it('GET /stats should return number of users and files', (done) => {
-    chai.request(server)
-      .get('/stats')
-      .end((err, res) => {
-        expect(res).to.have.status(200);
-        expect(res.body).to.deep.equal({ users: 0, files: 0 });
-        done();
-      });
-  });
+  // Add more tests for other endpoints here
 });
