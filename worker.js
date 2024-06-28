@@ -1,40 +1,30 @@
 // worker.js
 
-const Bull = require('bull');
-const fs = require('fs');
-const path = require('path');
-const imageThumbnail = require('image-thumbnail');
-const dbClient = require('./utils/db');
-const fileQueue = new Bull('fileQueue');
+const Queue = require('bull');
+const { userQueue } = require('./queues');
 
-fileQueue.process(async (job, done) => {
-  const { userId, fileId } = job.data;
+// Define userQueue
+const userQueue = new Queue('userQueue', REDIS_URL);
 
-  if (!fileId) {
-    return done(new Error('Missing fileId'));
-  }
+// Process userQueue
+userQueue.process(async (job) => {
+  const { userId } = job.data;
 
   if (!userId) {
-    return done(new Error('Missing userId'));
+    throw new Error('Missing userId');
   }
 
-  const file = await dbClient.db.collection('files').findOne({
-    _id: dbClient.db.ObjectId(fileId),
-    userId: dbClient.db.ObjectId(userId),
-  });
+  // Example: Find user in the database based on userId
+  const user = await User.findById(userId);
 
-  if (!file) {
-    return done(new Error('File not found'));
+  if (!user) {
+    throw new Error('User not found');
   }
 
-  const sizes = [500, 250, 100];
-  const options = sizes.map(size => ({ width: size }));
-
-  for (const option of options) {
-    const thumbnail = await imageThumbnail(file.localPath, option);
-    const thumbnailPath = `${file.localPath}_${option.width}`;
-    fs.writeFileSync(thumbnailPath, thumbnail);
-  }
-
-  done();
+  // Replace with actual email sending logic
+  console.log(`Welcome ${user.email}!`);
 });
+
+module.exports = {
+  userQueue
+};
